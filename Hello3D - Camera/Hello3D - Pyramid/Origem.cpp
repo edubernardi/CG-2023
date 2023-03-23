@@ -59,12 +59,11 @@ const GLchar* fragmentShaderSource = "#version 450\n"
 "color = finalColor;\n"
 "}\n\0";
 
-bool rotateX=false, rotateY=false, rotateZ=false;
-
+bool rotateX = false, rotateY = false, rotateZ = false;
 glm::vec3 cameraPos = glm::vec3(0.0, 0.0, 3.0);
 glm::vec3 cameraFront = glm::vec3(0.0, 0.0, -1.0);
 glm::vec3 cameraUp = glm::vec3(0.0, 1.0, 0.0);
-float cameraSpeed = 0.05;
+float speed = 0.05;
 
 // Função MAIN
 int main()
@@ -86,7 +85,7 @@ int main()
 //#endif
 
 	// Criação da janela GLFW
-	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Ola Triangulo!", nullptr, nullptr);
+	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Ola Cubo!", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
 
 	// Fazendo o registro da função de callback para a janela GLFW
@@ -138,6 +137,8 @@ int main()
 
 	glEnable(GL_DEPTH_TEST);
 
+	model = glm::mat4(1);
+
 
 	// Loop da aplicação - "game loop"
 	while (!glfwWindowShouldClose(window))
@@ -152,45 +153,59 @@ int main()
 		glLineWidth(10);
 		glPointSize(20);
 
-		float angle = (GLfloat)glfwGetTime();
+		//float angle = (GLfloat)glfwGetTime();
+		float angle = speed;
+		//model = glm::mat4(1); 
 
-		model = glm::mat4(1); 
+		float xRotation = 0.0;
+		float yRotation = 0.0;
+		float zRotation = 0.0;
 
-		// model = glm::translate(model, glm::vec3(0.0, 0.0, cos(angle) * 10.0));
 		if (rotateX)
 		{
-			model = glm::rotate(model, angle, glm::vec3(1.0f, 0.0f, 0.0f));
-			
-		}
-		else if (rotateY)
-		{
-			model = glm::rotate(model, angle, glm::vec3(0.0f, 1.0f, 0.0f));
+			xRotation = 5.0;
 
 		}
-		else if (rotateZ)
+		else {
+			xRotation = 0.0;
+		}
+		if (rotateY)
 		{
-			model = glm::rotate(model, angle, glm::vec3(0.0f, 0.0f, 1.0f));
+			yRotation = 5.0;
 
+		}
+		else {
+			yRotation = 0.0;
+		}
+		if (rotateZ)
+		{
+			zRotation = 5.0;
+
+		}
+		else {
+			zRotation = 0.0;
+		}
+
+		if (rotateX || rotateY || rotateZ) {
+			model = glm::rotate(model, angle * speed, glm::vec3(float(rotateX), float(rotateY), float(rotateZ)));
 		}
 
 		glUniformMatrix4fv(modelLoc, 1, FALSE, glm::value_ptr(model));
 
-		//Alterando a matriz de view (posição e orientação da câmera)
 		glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 		glUniformMatrix4fv(viewLoc, 1, FALSE, glm::value_ptr(view));
 
 
-
 		// Chamada de desenho - drawcall
 		// Poligono Preenchido - GL_TRIANGLES
-		
+
 		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 18);
+		glDrawArrays(GL_TRIANGLES, 0, 49);
 
 		// Chamada de desenho - drawcall
 		// CONTORNO - GL_LINE_LOOP
-		
-		glDrawArrays(GL_POINTS, 0, 18);
+
+		glDrawArrays(GL_POINTS, 0, 49);
 		glBindVertexArray(0);
 
 		// Troca os buffers da tela
@@ -211,45 +226,69 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GL_TRUE);
 
+	if (key == GLFW_KEY_P && (action == GLFW_PRESS || action == GLFW_REPEAT))
+	{
+		speed += 0.1;
+	}
+
+	if (key == GLFW_KEY_O && action == GLFW_PRESS || action == GLFW_REPEAT)
+	{
+		speed -= 0.1;
+	}
+
 	if (key == GLFW_KEY_X && action == GLFW_PRESS)
 	{
-		rotateX = true;
-		rotateY = false;
-		rotateZ = false;
+		if (rotateX) {
+			rotateX = false;
+		}
+		else {
+			rotateX = true;
+		}
 	}
 
 	if (key == GLFW_KEY_Y && action == GLFW_PRESS)
 	{
-		rotateX = false;
-		rotateY = true;
-		rotateZ = false;
+		if (rotateY) {
+			rotateY = false;
+		}
+		else {
+			rotateY = true;
+		}
 	}
 
 	if (key == GLFW_KEY_Z && action == GLFW_PRESS)
 	{
-		rotateX = false;
-		rotateY = false;
-		rotateZ = true;
+		if (rotateZ) {
+			rotateZ = false;
+		}
+		else {
+			rotateZ = true;
+		}
 	}
 
 	if (key == GLFW_KEY_W)
 	{
-		cameraPos += cameraSpeed * cameraFront;
+		cameraPos += speed * cameraFront;
 	}
 
 	if (key == GLFW_KEY_S)
 	{
-		cameraPos -= cameraSpeed * cameraFront;
-	}
-
-	if (key == GLFW_KEY_A)
-	{
-		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+		cameraPos -= speed * cameraFront;
 	}
 
 	if (key == GLFW_KEY_D)
 	{
-		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * speed;
+	}
+
+	if (key == GLFW_KEY_A)
+	{
+		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * speed;
+	}
+
+	if (key == GLFW_KEY_UP)
+	{
+		cameraUp += speed;
 	}
 
 
@@ -319,32 +358,76 @@ int setupGeometry()
 
 		//Base da pirâmide: 2 triângulos
 		//x    y    z    r    g    b
-		-0.5, -0.5, -0.5, 1.0, 1.0, 0.0,
-		-0.5, -0.5,  0.5, 0.0, 1.0, 1.0,
-		 0.5, -0.5, -0.5, 1.0, 0.0, 1.0,
+		-0.5, -0.5, -0.5, 0.3, 0.5, 0.5,
+		-0.5, -0.5,  0.5, 0.3, 0.5, 0.5,
+		 0.5, -0.5, -0.5, 0.3, 0.5, 0.5,
 
-		 -0.5, -0.5, 0.5, 1.0, 1.0, 0.0,
-		  0.5, -0.5,  0.5, 0.0, 1.0, 1.0,
-		  0.5, -0.5, -0.5, 1.0, 0.0, 1.0,
-
-		 //
-		 -0.5, -0.5, -0.5, 1.0, 1.0, 0.0,
-		  0.0,  0.5,  0.0, 1.0, 1.0, 0.0,
-		  0.5, -0.5, -0.5, 1.0, 1.0, 0.0,
-
-		  -0.5, -0.5, -0.5, 1.0, 0.0, 1.0,
-		  0.0,  0.5,  0.0, 1.0, 0.0, 1.0,
-		  -0.5, -0.5, 0.5, 1.0, 0.0, 1.0,
-
-		   -0.5, -0.5, 0.5, 1.0, 1.0, 0.0,
-		  0.0,  0.5,  0.0, 1.0, 1.0, 0.0,
-		  0.5, -0.5, 0.5, 1.0, 1.0, 0.0,
-
-		   0.5, -0.5, 0.5, 0.0, 1.0, 1.0,
-		  0.0,  0.5,  0.0, 0.0, 1.0, 1.0,
-		  0.5, -0.5, -0.5, 0.0, 1.0, 1.0,
+		 -0.5, -0.5, 0.5, 0.3, 0.5, 0.5,
+		  0.5, -0.5,  0.5, 0.3, 0.5, 0.5,
+		  0.5, -0.5, -0.5, 0.3, 0.5, 0.5,
 
 
+		  // topo do cubo
+		  -0.5, 0.5, -0.5, 0.5, 0.5, 0.3,
+		 -0.5, 0.5,  0.5, 0.5, 0.5, 0.3,
+		  0.5, 0.5, -0.5, 0.5, 0.5, 0.3,
+
+		  -0.5, 0.5, 0.5, 0.5, 0.5, 0.3,
+		   0.5, 0.5,  0.5, 0.5, 0.5, 0.3,
+		   0.5, 0.5, -0.5, 0.5, 0.5, 0.3,
+
+		   //
+		   -0.5, -0.5, -0.5, 0.7, 0.3, 0.3,
+			-0.5,  0.5,  -0.5, 0.7, 0.3, 0.3,
+			0.5, -0.5, -0.5, 0.7, 0.3, 0.3,
+
+			-0.5, 0.5, -0.5, 0.7, 0.3, 0.3,
+			0.5,  0.5,  -0.5, 0.7, 0.3, 0.3,
+			0.5, -0.5, -0.5, 0.7, 0.3, 0.3,
+
+			 0.5, 0.5, 0.5,  0.3, 0.7, 0.3,
+			0.5,  -0.5,  0.5, 0.3, 0.7, 0.3,
+			-0.5, 0.5, 0.5, 0.3, 0.7, 0.3,
+
+			0.5, -0.5, 0.5, 0.3, 0.7, 0.3,
+			-0.5,  -0.5,  0.5, 0.3, 0.7, 0.3,
+			-0.5, 0.5, 0.5, 0.3, 0.7, 0.3,
+
+			//
+			0.5, 0.5, 0.5,  0.5, 0, 0.5,
+			0.5,  -0.5,  0.5, 0.5, 0, 0.5,
+			-0.5, 0.5, 0.5, 0.5, 0, 0.5,
+
+			0.5, -0.5, 0.5, 0.5, 0, 0.5,
+			-0.5,  -0.5,  0.5, 0.5, 0, 0.5,
+			-0.5, 0.5, 0.5, 0.5, 0, 0.5,
+
+			//
+			-0.5, -0.5, 0.5,  0.2, 0, 0.8,
+			-0.5,  0.5,  -0.5, 0.2, 0, 0.8,
+			-0.5, 0.5, 0.5, 0.2, 0, 0.8,
+
+			-0.5, -0.5, 0.5,  0.2, 0, 0.8,
+			-0.5,  0.5,  -0.5, 0.2, 0, 0.8,
+			-0.5, -0.5, -0.5, 0.2, 0, 0.8,
+
+			//
+			0.5, -0.5, 0.5,  0.8, 0.1, 0.2,
+			0.5,  0.5,  -0.5, 0.8, 0.1, 0.2,
+			0.5, 0.5, 0.5, 0.8, 0.1, 0.2,
+
+			0.5, -0.5, 0.5,  0.8, 0.1, 0.2,
+			0.5,  -0.5,  -0.5, 0.8, 0.1, 0.2,
+			0.5, 0.5, -0.5 , 0.8, 0.1, 0.2,
+
+			//ground
+			10, -0.51, -10,  0, 0.9, 0.1,
+			-10, -0.51,  -10, 0, 0.9, 0.1,
+			10, -0.51, 10, 0, 0.9, 0.1,
+
+			-10, -0.51, 10,  0, 0.9, 0.1,
+			-10, -0.51,  -10, 0, 0.9, 0.1,
+			10, -0.51, 10, 0, 0.9, 0.1,
 	};
 
 	GLuint VBO, VAO;
@@ -364,7 +447,7 @@ int setupGeometry()
 	// Vincula (bind) o VAO primeiro, e em seguida  conecta e seta o(s) buffer(s) de vértices
 	// e os ponteiros para os atributos 
 	glBindVertexArray(VAO);
-	
+
 	//Para cada atributo do vertice, criamos um "AttribPointer" (ponteiro para o atributo), indicando: 
 	// Localização no shader * (a localização dos atributos devem ser correspondentes no layout especificado no vertex shader)
 	// Numero de valores que o atributo tem (por ex, 3 coordenadas xyz) 
@@ -372,13 +455,13 @@ int setupGeometry()
 	// Se está normalizado (entre zero e um)
 	// Tamanho em bytes 
 	// Deslocamento a partir do byte zero 
-	
+
 	//Atributo posição (x, y, z)
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
 
 	//Atributo cor (r, g, b)
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3*sizeof(GLfloat)));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(1);
 
 
@@ -392,4 +475,3 @@ int setupGeometry()
 
 	return VAO;
 }
-
