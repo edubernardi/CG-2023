@@ -31,6 +31,9 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 // mouse callback
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 
+// scroll callback
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+
 // Protótipos das funções
 int setupShader();
 int setupGeometry();
@@ -72,6 +75,8 @@ bool firstMouse = true;
 float lastX = 0.0, lastY = 0.0;
 float yaw = -90.0, pitch = 0.0;
 
+float fov = 45.0;
+
 // Função MAIN
 int main()
 {
@@ -98,8 +103,11 @@ int main()
 	// Fazendo o registro da função de callback para a janela GLFW
 	glfwSetKeyCallback(window, key_callback);
 
-	//
+	//callback do mouse
 	glfwSetCursorPosCallback(window, mouse_callback);
+
+	//callback do scroll
+	glfwSetScrollCallback(window, scroll_callback);
 
 	//desabilitando cursor mouse
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -144,7 +152,7 @@ int main()
 	glUniformMatrix4fv(viewLoc, 1, FALSE, glm::value_ptr(view));
 
 	//Definindo a matriz de projeção perpectiva
-	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (GLfloat)width / (GLfloat)height, 0.1f, 100.0f);
+	glm::mat4 projection = glm::perspective(glm::radians(fov), (GLfloat)width / (GLfloat)height, 0.1f, 100.0f);
 	GLint projLoc = glGetUniformLocation(shaderID, "projection");
 	glUniformMatrix4fv(projLoc, 1, FALSE, glm::value_ptr(projection));
 
@@ -208,6 +216,8 @@ int main()
 		glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 		glUniformMatrix4fv(viewLoc, 1, FALSE, glm::value_ptr(view));
 
+		glm::mat4 projection = glm::perspective(glm::radians(fov), (GLfloat)width / (GLfloat)height, 0.1f, 100.0f);
+		glUniformMatrix4fv(projLoc, 1, FALSE, glm::value_ptr(projection));
 
 		// Chamada de desenho - drawcall
 		// Poligono Preenchido - GL_TRIANGLES
@@ -347,7 +357,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		cameraFront = glm::vec3(-0.001, 0.99, -0.26);
 	}
 
-
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
@@ -391,6 +400,12 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	cout << "\nCameraUp y:" << cameraUp.y;
 	cout << "\nCameraUp z:" << cameraUp.z;
 }
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	fov -= yoffset;
+}
+
 
 //Esta função está basntante hardcoded - objetivo é compilar e "buildar" um programa de
 // shader simples e único neste exemplo de código
