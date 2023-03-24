@@ -36,7 +36,7 @@ int setupShader();
 int setupGeometry();
 
 // Dimensões da janela (pode ser alterado em tempo de execução)
-const GLuint WIDTH = 1000, HEIGHT = 1000;
+const GLuint WIDTH = 1920, HEIGHT = 1080;
 
 // Código fonte do Vertex Shader (em GLSL): ainda hardcoded
 const GLchar* vertexShaderSource = "#version 450\n"
@@ -299,6 +299,53 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * float(0.1);
 	}
 
+	//visão superior
+	if (key == GLFW_KEY_1) 
+	{
+		cameraPos = glm::vec3(0.0, 5.0, 0.0);
+		cameraUp = glm::vec3(0.0, 1.0, 0.0);
+		cameraFront = glm::vec3(0.00108709, -0.999701, 0.02441);
+	}
+
+	//visão de frente
+	if (key == GLFW_KEY_2)
+	{
+		cameraPos = glm::vec3(0.0, 0.0, 3.0);
+		cameraUp = glm::vec3(0.0, 1.0, 0.0);
+		cameraFront = glm::vec3(-0.0235599, -0.00523596, -0.999709);
+	}
+
+	//visão direita
+	if (key == GLFW_KEY_3)
+	{
+		cameraPos = glm::vec3(3.0, 0.0, 0.0);
+		cameraUp = glm::vec3(0.0, 1.0, 0.0);
+		cameraFront = glm::vec3(-0.99, -0.00523596, 0.062);
+	}
+
+	//visão traseira
+	if (key == GLFW_KEY_4)
+	{
+		cameraPos = glm::vec3(0.0, 0.0, -3.0);
+		cameraUp = glm::vec3(0.0, 1.0, 0.0);
+		cameraFront = glm::vec3(-0.006, -0.007, 0.99);
+	}
+
+	//visão esquerda
+	if (key == GLFW_KEY_5)
+	{
+		cameraPos = glm::vec3(-3.0, 0.0, 0.0);
+		cameraUp = glm::vec3(0.0, 1.0, 0.0);
+		cameraFront = glm::vec3(0.99, -0.02, -0.03);
+	}
+
+	//visão de baixo (só da pra ver o chão)
+	if (key == GLFW_KEY_6)
+	{
+		cameraPos = glm::vec3(0.0, -5.0, 0.0);
+		cameraUp = glm::vec3(0.0, 1.0, 0.0);
+		cameraFront = glm::vec3(-0.001, 0.99, -0.26);
+	}
 
 
 }
@@ -332,6 +379,17 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
 	cameraFront = glm::normalize(front);
 
+	cout << "\nCameraPos x:" << cameraPos.x;
+	cout << "\nCameraPos y:" << cameraPos.y;
+	cout << "\nCameraPos z:" << cameraPos.z;
+
+	cout << "\nCameraFront x:" << cameraFront.x;
+	cout << "\nCameraFront y:" << cameraFront.y;
+	cout << "\nCameraFront z:" << cameraFront.z;
+
+	cout << "\nCameraUp x:" << cameraUp.x;
+	cout << "\nCameraUp y:" << cameraUp.y;
+	cout << "\nCameraUp z:" << cameraUp.z;
 }
 
 //Esta função está basntante hardcoded - objetivo é compilar e "buildar" um programa de
