@@ -10,6 +10,9 @@
 #include <iostream>
 #include <string>
 #include <assert.h>
+#include <vector>
+#include <fstream>
+#include <sstream>
 
 using namespace std;
 
@@ -37,6 +40,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 // Protótipos das funções
 int setupShader();
 int setupGeometry();
+int loadOBJ(string filepath);
 
 // Dimensões da janela (pode ser alterado em tempo de execução)
 const GLuint WIDTH = 1920, HEIGHT = 1080;
@@ -65,6 +69,12 @@ const GLchar* fragmentShaderSource = "#version 450\n"
 "color = finalColor;\n"
 "}\n\0";
 
+struct Vertex
+{
+	glm::vec3 position;
+	glm::vec3 color;
+};
+
 bool rotateX = false, rotateY = false, rotateZ = false;
 glm::vec3 cameraPos = glm::vec3(0.0, 0.0, 3.0);
 glm::vec3 cameraFront = glm::vec3(0.0, 0.0, -1.0);
@@ -77,9 +87,14 @@ float yaw = -90.0, pitch = 0.0;
 
 float fov = 45.0;
 
+vector <Vertex> vertices;
+vector <GLuint> indices;
+
+
 // Função MAIN
 int main()
 {
+	loadOBJ("cube.obj");
 	// Inicialização da GLFW
 	glfwInit();
 
@@ -92,9 +107,9 @@ int main()
 	//glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	//Essencial para computadores da Apple
-//#ifdef __APPLE__
-//	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-//#endif
+	//#ifdef __APPLE__
+	//	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+	//#endif
 
 	// Criação da janela GLFW
 	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Ola Cubo!", nullptr, nullptr);
@@ -586,4 +601,55 @@ int setupGeometry()
 	glBindVertexArray(0);
 
 	return VAO;
+}
+
+int loadOBJ(string filepath)
+{
+	std::ifstream myfile;
+	myfile.open(filepath);
+	
+	if (myfile.is_open()) {
+		vector <GLfloat> vbuffer;
+		while (myfile) {
+			string linha;
+			getline(myfile, linha);
+
+			string word;
+			
+			istringstream ssline(linha);
+			ssline >> word;
+
+			if (word == "v")
+			{
+				Vertex v;
+
+				ssline >> v.position.x >> v.position.y >> v.position.z;
+				v.color.r = 1.0;
+				v.color.g = 0.0;
+				v.color.b = 0.0;
+				
+				vertices.push_back(v);
+			}
+			else if (word == "f")
+			{
+				string tokens[3];
+				
+				ssline >> tokens[0] >> tokens[1] >> tokens[2];
+				
+				for (int i = 0; i < 3; i++) {
+					int pos = tokens[i].find("/");
+					string token = tokens[i].substr(i, pos);
+					//cout << token << endl;
+					int index = atoi(token.c_str()) - 1;
+					cout << vertices[index].position.x << " " << vertices[index].position.y << " " << vertices[index].position.z << endl;
+
+				}
+
+			}
+		}
+	}
+	else {
+		cout << "Couldn't open file\n";
+	}
+	return 0;
 }
